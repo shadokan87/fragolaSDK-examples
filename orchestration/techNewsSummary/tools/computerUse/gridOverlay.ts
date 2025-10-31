@@ -113,36 +113,24 @@ export const createCoordinatesOverlay = async (
     const x0 = Math.floor(rect.x);
     const y0 = Math.floor(rect.y);
 
-    // Prefer label above the frame; if not enough room, place below
+    // Place label at the top-left of the element, touching the frame (no gap).
+    // Prefer just above the frame; if not enough space, place inside the frame below the top border.
     let labelX = x0;
     labelX = Math.max(0, Math.min(labelX, imgW - boxW));
-    let labelY = y0 - boxH - 6; // 6px gap + connector
-    let attachAbove = true;
+    let labelY = y0 - boxH; // flush: label bottom touches frame top
     if (labelY < 0) {
-      labelY = y0 + Math.max(1, Math.floor(Math.min(rect.height, 10))) + 6; // below with small gap
-      attachAbove = false;
+      // Not enough room above: place inside the element, just under the top border
+      labelY = y0 + Math.max(0, Math.min(borderWidth, Math.floor(rect.height)));
       if (labelY + boxH > imgH) {
-        // If still out of bounds, try aligning to bottom edge inside image
-        labelY = Math.max(0, imgH - boxH - 1);
+        labelY = Math.max(0, imgH - boxH);
       }
     }
 
-    // Background box for the label
-    const bgColor = Jimp.rgbaToInt(0, 0, 0, 180);
+    // Background box for the label uses the same color as the red frame
+    const bgColor = borderColor;
     drawFilledRect(labelX, labelY, boxW, boxH, bgColor);
 
-    // Connector: small vertical line from label to frame (use red border color)
-    const connectorX = Math.round(Math.min(Math.max(labelX + 12, x0 + 6), labelX + boxW - 12));
-    if (attachAbove) {
-      // from bottom center of label to top edge of frame
-      drawVLine(connectorX, labelY + boxH, y0, borderColor);
-    } else {
-      // from bottom edge of frame to top of label
-      drawVLine(connectorX, y0 + Math.max(1, Math.floor(Math.min(rect.height, 10))), labelY, borderColor);
-    }
-
-    // Text with a subtle shadow
-    image.print(fontBlack, labelX + padX + 1, labelY + padY + 1, text);
+    // High-contrast text on red background
     image.print(fontWhite, labelX + padX, labelY + padY, text);
   };
 

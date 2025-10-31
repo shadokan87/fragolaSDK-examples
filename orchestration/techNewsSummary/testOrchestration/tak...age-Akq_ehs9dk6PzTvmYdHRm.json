@@ -1,0 +1,33 @@
+[
+  {
+    "role": "user",
+    "content": "take a screenshot of the google homepage"
+  },
+  {
+    "annotations": [],
+    "content": null,
+    "refusal": null,
+    "role": "assistant",
+    "tool_calls": [
+      {
+        "function": {
+          "arguments": "{\"url\":\"https://www.google.com\"}",
+          "name": "takeScreenshot"
+        },
+        "id": "call_rkBcgQlespWD4kH4etGqT0g1",
+        "type": "function"
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "content": "{\"id\":\"1WmRyuZh65VeKiJ-t9ebi\",\"url\":\"https://www.google.com\",\"mime\":\"image/png\",\"bytes\":174276}",
+    "tool_call_id": "call_rkBcgQlespWD4kH4etGqT0g1"
+  },
+  {
+    "annotations": [],
+    "content": "I have taken a screenshot of the Google homepage. You can retrieve it using the ID: 1WmRyuZh65VeKiJ-t9ebi.",
+    "refusal": null,
+    "role": "assistant"
+  }
+]
