@@ -1,4 +1,5 @@
 import type { Page } from "puppeteer";
+import { nanoid } from "nanoid";
 
 export type InteractiveElementPosition = {
 	id: string,
@@ -164,5 +165,11 @@ export async function getInteractiveElementsPosition(
 			.sort((a, b) => (a.y === b.y ? a.x - b.x : a.y - b.y));
 	});
 
-	return items as InteractiveElementPosition[];
+	// Add a unique id to each element (generated in Node context)
+	type WithoutId = Omit<InteractiveElementPosition, "id">;
+	const withIds: InteractiveElementPosition[] = (items as WithoutId[]).map((el) => ({
+		id: nanoid(4),
+		...el,
+	}));
+	return withIds;
 }

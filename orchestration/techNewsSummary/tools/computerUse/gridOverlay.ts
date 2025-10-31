@@ -66,9 +66,92 @@ export const createCoordinatesOverlay = async (
     }
   };
 
+  // Load fonts for labels
+  const [fontWhite, fontBlack] = await Promise.all([
+    Jimp.loadFont(Jimp.FONT_SANS_16_WHITE),
+    Jimp.loadFont(Jimp.FONT_SANS_16_BLACK),
+  ]);
+
+  // Helpers to draw basic primitives
+  const drawVLine = (x: number, y0: number, y1: number, color: number) => {
+    const xx = Math.round(x);
+    const from = Math.max(0, Math.min(y0, y1));
+    const to = Math.min(imgH - 1, Math.max(y0, y1));
+    if (xx < 0 || xx >= imgW) return;
+    for (let yy = from; yy <= to; yy++) image.setPixelColor(color, xx, yy);
+  };
+  const drawHLine = (y: number, x0: number, x1: number, color: number) => {
+    const yy = Math.round(y);
+    const from = Math.max(0, Math.min(x0, x1));
+    const to = Math.min(imgW - 1, Math.max(x0, x1));
+    if (yy < 0 || yy >= imgH) return;
+    for (let xx = from; xx <= to; xx++) image.setPixelColor(color, xx, yy);
+  };
+  const drawFilledRect = (x: number, y: number, w: number, h: number, color: number) => {
+    const x0 = Math.max(0, Math.floor(x));
+    const y0 = Math.max(0, Math.floor(y));
+    const x1 = Math.min(imgW - 1, Math.floor(x + w - 1));
+    const y1 = Math.min(imgH - 1, Math.floor(y + h - 1));
+    if (x0 > x1 || y0 > y1) return;
+    for (let yy = y0; yy <= y1; yy++) {
+      for (let xx = x0; xx <= x1; xx++) image.setPixelColor(color, xx, yy);
+    }
+  };
+
+  // Draw a label with connector attached to the frame's top edge
+  const drawLabel = (rect: { x: number; y: number; width: number; height: number; id?: string }) => {
+    const text = rect.id ?? "";
+    if (!text) return; // nothing to show
+
+    const padX = 6;
+    const padY = 3;
+    const textW = Jimp.measureText(fontWhite, text);
+    const textH = Jimp.measureTextHeight(fontWhite, text, textW);
+    const boxW = textW + padX * 2;
+    const boxH = textH + padY * 2;
+
+    const x0 = Math.floor(rect.x);
+    const y0 = Math.floor(rect.y);
+
+    // Prefer label above the frame; if not enough room, place below
+    let labelX = x0;
+    labelX = Math.max(0, Math.min(labelX, imgW - boxW));
+    let labelY = y0 - boxH - 6; // 6px gap + connector
+    let attachAbove = true;
+    if (labelY < 0) {
+      labelY = y0 + Math.max(1, Math.floor(Math.min(rect.height, 10))) + 6; // below with small gap
+      attachAbove = false;
+      if (labelY + boxH > imgH) {
+        // If still out of bounds, try aligning to bottom edge inside image
+        labelY = Math.max(0, imgH - boxH - 1);
+      }
+    }
+
+    // Background box for the label
+    const bgColor = Jimp.rgbaToInt(0, 0, 0, 180);
+    drawFilledRect(labelX, labelY, boxW, boxH, bgColor);
+
+    // Connector: small vertical line from label to frame (use red border color)
+    const connectorX = Math.round(Math.min(Math.max(labelX + 12, x0 + 6), labelX + boxW - 12));
+    if (attachAbove) {
+      // from bottom center of label to top edge of frame
+      drawVLine(connectorX, labelY + boxH, y0, borderColor);
+    } else {
+      // from bottom edge of frame to top of label
+      drawVLine(connectorX, y0 + Math.max(1, Math.floor(Math.min(rect.height, 10))), labelY, borderColor);
+    }
+
+    // Text with a subtle shadow
+    image.print(fontBlack, labelX + padX + 1, labelY + padY + 1, text);
+    image.print(fontWhite, labelX + padX, labelY + padY, text);
+  };
+
   // Draw frames for all detected element rectangles
   for (const rect of coordinates ?? []) {
     drawFrame(rect.x, rect.y, rect.width, rect.height);
+    // Draw label using rect.id if provided
+    // @ts-ignore - coordinates elements may carry an id field depending on extractor
+    drawLabel(rect);
   }
 
   // Export with same mime when possible (fallback to PNG)
