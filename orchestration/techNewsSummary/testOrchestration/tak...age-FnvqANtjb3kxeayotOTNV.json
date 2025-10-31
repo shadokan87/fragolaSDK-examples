@@ -1,0 +1,33 @@
+[
+  {
+    "role": "user",
+    "content": "take a screenshot of the youtube homepage"
+  },
+  {
+    "annotations": [],
+    "content": null,
+    "refusal": null,
+    "role": "assistant",
+    "tool_calls": [
+      {
+        "function": {
+          "arguments": "{\"url\":\"https://www.youtube.com\"}",
+          "name": "takeScreenshot"
+        },
+        "id": "call_DZWOvDXnSJD4pDwwZ9zF5beX",
+        "type": "function"
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "content": "{\"id\":\"smQWQGNK-t4XOm6A-8NsV\",\"url\":\"https://www.youtube.com\",\"mime\":\"image/png\",\"bytes\":256416}",
+    "tool_call_id": "call_DZWOvDXnSJD4pDwwZ9zF5beX"
+  },
+  {
+    "annotations": [],
+    "content": "I have taken a screenshot of the YouTube homepage. The screenshot ID is \"smQWQGNK-t4XOm6A-8NsV\" for retrieval by other agents.",
+    "refusal": null,
+    "role": "assistant"
+  }
+]

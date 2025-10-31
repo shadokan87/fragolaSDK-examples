@@ -2,7 +2,8 @@ import { tool } from "@fragola-ai/agentic-sdk-core";
 import puppeteer from "puppeteer";
 import z from "zod";
 import { nanoid } from "nanoid";
-import { globalStore, globalStoreType } from "../../store/globalStore";
+import { globalStoreType } from "../../store/globalStore";
+import { getInteractiveElementsPosition } from "../../dom/getInteractiveElementsPosition";
 
 export const takeScreenshot = tool({
   name: "takeScreenshot",
@@ -14,11 +15,18 @@ export const takeScreenshot = tool({
   handler: async ({ url }, context) => {
     const browser = await puppeteer.launch({
       headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      // Set a 2K/1440p viewport for consistent sizing in headless mode
+      defaultViewport: { width: 2560, height: 1440, deviceScaleFactor: 1 },
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--window-size=2560,1440",
+      ],
     });
     try {
       const page = await browser.newPage();
       await page.goto(url, { waitUntil: "networkidle2", timeout: 30_000 });
+      const coordinates = await getInteractiveElementsPosition(page);
       const base64 = (await page.screenshot({
         type: "png",
         encoding: "base64",
@@ -26,8 +34,12 @@ export const takeScreenshot = tool({
       })) as string;
       const id = nanoid();
       const mime = "image/png";
+      const globalStore = context.getGlobalStore<globalStoreType>()
+      if (!globalStore) {
+        throw new Error("Global store undefined error");
+      }
       // Saving the screenshot in the global store so any agent can read it
-      context.getGlobalStore<globalStoreType>()?.value.screenshots.set(id, { url, mime, base64, createdAt: new Date().toISOString() });
+      globalStore.value.screenshots.set(id, { coordinates, url, mime, base64, createdAt: new Date().toISOString() });
       return {
         id,
         url,

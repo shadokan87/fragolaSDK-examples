@@ -1,30 +1,47 @@
 import fs from "fs";
 import path from "path";
 import { createCoordinatesOverlay } from "./tools/computerUse/gridOverlay";
-import { ScreenshotMeta } from "./store/globalStore";
+import { globalStore, ScreenshotMeta } from "./store/globalStore";
+import { scraperAgent } from "./agents/scraperAgent";
 
 async function main() {
-  // Read the PNG file as base64
-  const inputPath = path.resolve(__dirname, "./screenshot.png");
-  const outputPath = path.resolve(__dirname, "./screenshot_processed.png");
-  if (!fs.existsSync(inputPath)) {
-    throw new Error(`Input file not found: ${inputPath}`);
-  }
-  const imgBuffer = fs.readFileSync(inputPath);
-  const base64 = imgBuffer.toString("base64");
+  // globalStore.onChange((value) => {
+  //   console.log("!value change", value);
+  // });
+  await scraperAgent.userMessage({content: "take a screenshot of the google homepage"});
+  const screenshot = globalStore.value.screenshots.values().next().value as ScreenshotMeta | undefined;
+  if (!screenshot || !screenshot.coordinates) throw new Error("coordinates undefined");
 
-  const meta: ScreenshotMeta = {
-    url: "file://screenshot.png",
-    mime: "image/png",
-    base64,
-    createdAt: new Date().toISOString(),
-  };
-
-  const processed = await createCoordinatesOverlay(meta);
+  // Create overlay with red frames around detected elements and save to disk
+  const processed = await createCoordinatesOverlay(screenshot);
+  const outPath = path.resolve(__dirname, "./screenshot_processed.png");
   const outBuffer = Buffer.from(processed.base64, "base64");
-  fs.writeFileSync(outputPath, outBuffer);
-  console.log("Overlay applied. Output saved to:", outputPath);
+  fs.writeFileSync(outPath, outBuffer);
+  console.log("Overlay applied. Output saved to:", outPath);
 }
+
+// async function main() {
+//   // Read the PNG file as base64
+//   const inputPath = path.resolve(__dirname, "./screenshot.png");
+//   const outputPath = path.resolve(__dirname, "./screenshot_processed.png");
+//   if (!fs.existsSync(inputPath)) {
+//     throw new Error(`Input file not found: ${inputPath}`);
+//   }
+//   const imgBuffer = fs.readFileSync(inputPath);
+//   const base64 = imgBuffer.toString("base64");
+
+//   const meta: ScreenshotMeta = {
+//     url: "file://screenshot.png",
+//     mime: "image/png",
+//     base64,
+//     createdAt: new Date().toISOString(),
+//   };
+
+//   const processed = await createCoordinatesOverlay(meta);
+//   const outBuffer = Buffer.from(processed.base64, "base64");
+//   fs.writeFileSync(outputPath, outBuffer);
+//   console.log("Overlay applied. Output saved to:", outputPath);
+// }
 
 main().catch((err) => {
   console.error(err);
