@@ -98,7 +98,7 @@ export const createCoordinatesOverlay = async (
     }
   };
 
-  // Draw a label with connector attached to the frame's top edge
+  // Draw a label placed outside the rectangle: prefer above; otherwise place below.
   const drawLabel = (rect: { x: number; y: number; width: number; height: number; id?: string }) => {
     const text = rect.id ?? "";
     if (!text) return; // nothing to show
@@ -114,15 +114,31 @@ export const createCoordinatesOverlay = async (
     const y0 = Math.floor(rect.y);
 
     // Place label at the top-left of the element, touching the frame (no gap).
-    // Prefer just above the frame; if not enough space, place inside the frame below the top border.
+    // Prefer just above the frame; if not enough space, place BELOW the frame.
+    // In no case should the label be drawn INSIDE the rectangle.
     let labelX = x0;
     labelX = Math.max(0, Math.min(labelX, imgW - boxW));
-    let labelY = y0 - boxH; // flush: label bottom touches frame top
-    if (labelY < 0) {
-      // Not enough room above: place inside the element, just under the top border
-      labelY = y0 + Math.max(0, Math.min(borderWidth, Math.floor(rect.height)));
-      if (labelY + boxH > imgH) {
-        labelY = Math.max(0, imgH - boxH);
+
+    const aboveY = y0 - boxH; // label bottom touches frame top
+    let labelY: number;
+    if (aboveY >= 0) {
+      // Enough room above
+      labelY = aboveY;
+    } else {
+      // Not enough room above: place just below the frame
+      const belowY = Math.ceil(y0 + rect.height); // label top touches frame bottom
+      if (belowY + boxH <= imgH) {
+        // Fits fully below
+        labelY = belowY;
+      } else {
+        // Try clamping to bottom edge if it still stays below the rectangle
+        const clampedBottom = imgH - boxH;
+        if (clampedBottom >= Math.ceil(y0 + rect.height)) {
+          labelY = clampedBottom;
+        } else {
+          // As a last resort, keep it just below the rectangle (may be partially clipped)
+          labelY = belowY;
+        }
       }
     }
 

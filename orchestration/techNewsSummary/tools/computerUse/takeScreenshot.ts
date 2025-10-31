@@ -27,6 +27,7 @@ export const takeScreenshot = tool({
       const page = await browser.newPage();
       await page.goto(url, { waitUntil: "networkidle2", timeout: 30_000 });
       const coordinates = await getInteractiveElementsPosition(page);
+      console.log(JSON.stringify(coordinates, null, 2));
       const base64 = (await page.screenshot({
         type: "png",
         encoding: "base64",
