@@ -1,5 +1,6 @@
 import { createStore } from "@fragola-ai/agentic-sdk-core/store";
 import { getInteractiveElementsPosition } from "../dom/getInteractiveElementsPosition";
+import { Browser, Page } from "puppeteer";
 
 export type ScreenshotMeta = {
   url: string;
@@ -10,9 +11,15 @@ export type ScreenshotMeta = {
 };
 
 export interface globalStoreType {
-    screenshots: Map<string, ScreenshotMeta>
+    screenshots: Map<string, ScreenshotMeta>,
+    browser: Browser | undefined,
+    focusedPage: Page | undefined,
+    pages: Page[]
 };
 
 export const globalStore = createStore<globalStoreType>({
-    screenshots: new Map()
+    screenshots: new Map(),
+    browser: undefined,
+    focusedPage: undefined,
+    pages: []
 });

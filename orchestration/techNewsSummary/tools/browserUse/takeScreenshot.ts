@@ -1,0 +1,48 @@
+import { tool } from "@fragola-ai/agentic-sdk-core";
+import puppeteer from "puppeteer";
+import z from "zod";
+import { nanoid } from "nanoid";
+import { globalStoreType } from "../../store/globalStore";
+import { getInteractiveElementsPosition } from "../../dom/getInteractiveElementsPosition";
+import { AgentContext } from "@fragola-ai/agentic-sdk-core/agent";
+
+// Independent screenshot callback
+export async function takeScreenshotCallback(parameters: any, context: AgentContext<{}, globalStoreType, {}>) {
+  void parameters;
+
+  const globalStore = context.globalStore;
+  if (!globalStore) {
+    return { fail: "Global store undefined error" };
+  }
+  if (!globalStore.value.browser) {
+    return { fail: "failed: browser is not opened. Please open the browser first." };
+  }
+  const { browser, focusedPage } = globalStore.value;
+  const page = focusedPage;
+  if (!page) {
+    return { fail: "failed: you must open a new tab first. no focused page found" };
+  }
+  try {
+    const coordinates = await getInteractiveElementsPosition(page);
+    const base64 = (await page.screenshot({
+      type: "png",
+      encoding: "base64",
+      fullPage: true,
+    })) as string;
+    const id = nanoid();
+    const mime = "image/png";
+    globalStore.value.screenshots.set(id, { coordinates, url: page.url(), mime, base64, createdAt: new Date().toISOString() });
+    return {
+      id,
+    };
+  } finally {
+    // Do not close the browser, just leave it open
+  }
+}
+
+export const takeScreenshot = tool({
+  name: "takeScreenshot",
+  description:
+    "Take a screenshot of the focused page then return and id for the file handler",
+  handler: takeScreenshotCallback,
+});

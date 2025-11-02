@@ -1,14 +1,13 @@
 import fs from "fs";
 import path from "path";
-import { createCoordinatesOverlay } from "./tools/computerUse/gridOverlay";
+import { createCoordinatesOverlay } from "./tools/browserUse/gridOverlay";
 import { globalStore, ScreenshotMeta } from "./store/globalStore";
-import { scraperAgent } from "./agents/scraperAgent";
-
+import { browserUseAgent } from "./agents/browserUseAgent";
 async function main() {
   // globalStore.onChange((value) => {
   //   console.log("!value change", value);
   // });
-  await scraperAgent.userMessage({content: "take a screenshot of the google homepage"});
+  await browserUseAgent.userMessage({content: "take a screenshot of the google homepage"});
   const screenshot = globalStore.value.screenshots.values().next().value as ScreenshotMeta | undefined;
   if (!screenshot || !screenshot.coordinates) throw new Error("coordinates undefined");
 
