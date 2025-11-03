@@ -4,55 +4,56 @@ import { globalStoreType } from "../../store/globalStore";
 import { takeScreenshotCallback } from "./takeScreenshot";
 import { createCoordinatesOverlay } from "./gridOverlay";
 import { nanoid } from "nanoid";
+import { AfterClick, clickInternal } from "./click";
 
 export const typeText = tool({
   name: "type",
   description: "Type the provided text into the element located from the last screenshot's coordinates using its id.",
-  schema: z.object({ id: z.string(), text: z.string() }),
-  handler: async ({ id, text }, context) => {
-    const globalStore = context.getGlobalStore<globalStoreType>();
-    if (!globalStore) {
-      return { fail: "could not access global store." };
-    }
-    const page = globalStore.value.focusedPage;
-    if (!page) {
-      return { fail: "no focused page. Open a tab first." };
-    }
-    const meta = globalStore.value.screenshots.get(id);
-    if (!meta) {
-      return { fail: `no screenshot found for id ${id}` };
-    }
-    const coords = meta.coordinates;
-    if (!coords || coords.length === 0) {
-      return { fail: `no coordinates found in screenshot for id ${id}` };
-    }
-
-    // For now, type into the center of the first coordinate rectangle
-    const rect = coords[0];
-    if (!rect) {
-      return { fail: `no valid rectangle to type into for id ${id}` };
-    }
-
-    const x = typeof (rect as any).centerX === 'number' ? (rect as any).centerX : rect.x + rect.width / 2;
-    const y = typeof (rect as any).centerY === 'number' ? (rect as any).centerY : rect.y + rect.height / 2;
-
-    try {
-      // Focus the element by clicking
-      await page.mouse.click(x, y);
-      // Type the provided text
-      await page.keyboard.type(text, { delay: 20 });
-
-      // Take a new screenshot and return an annotated version id
-      const screenshot = await takeScreenshotCallback(undefined, context);
-      if ((screenshot as any)["fail"]) return screenshot as any;
-
-      const coordinateScreenshot = await createCoordinatesOverlay(globalStore.value.screenshots.get((screenshot as any).id!)!);
-      const coordinateScreenshotId = nanoid();
-      globalStore.value.screenshots.set(coordinateScreenshotId, coordinateScreenshot);
-
-      return { success: true, message: `typed text at (${x}, ${y}) for id ${id}`, screenshotId: coordinateScreenshotId };
-    } catch (e) {
-      return { fail: `error typing at (${x}, ${y}) for id ${id}: ${(e as Error).message}` };
-    }
+  schema: z.object({
+    id: z.number().describe("The id of the element to type into"),
+    screenshotId: z.string().describe("The id of the screenshot supplying coordinates"),
+    text: z.string().describe("The text to type into the target element"),
+    submit: z.boolean().optional().default(false).describe("If true, submits after typing (e.g., press Enter or submit form)"),
+  }),
+  handler: async ({ id, screenshotId, text, submit = false }, context) => {
+      const globalStore = context.getGlobalStore<globalStoreType>();
+        if (!globalStore) {
+            return { fail: "could not access global store." };
+        }
+        const page = globalStore.value.focusedPage;
+        if (!page) {
+            return { fail: "no focused page. Open a tab first." };
+        }
+        const meta = globalStore.value.screenshots.get(screenshotId);
+        if (!meta) {
+            return { fail: `no screenshot found for screenshotId ${screenshotId}` };
+        }
+        const coords = meta.coordinates;
+        if (!coords || coords.length === 0) {
+            return { fail: `no coordinates found in screenshot for id ${screenshotId}` };
+        }
+        const afterClick: AfterClick = async (page) => {
+          await page.keyboard.type(text, { delay: 20 });
+          if (submit) {
+            // Try to submit the nearest form if focused element is inside one; else press Enter
+            const didSubmit = await page.evaluate(() => {
+              const active = document.activeElement as HTMLElement | null;
+              const form = active?.closest('form') as HTMLFormElement | null;
+              if (form && typeof form.requestSubmit === 'function') { form.requestSubmit(); return true; }
+              return false;
+            });
+            if (!didSubmit) {
+              await page.keyboard.press('Enter');
+            }
+            return "typed text and submitted";
+          }
+          return "typed text";
+        }
+        return await clickInternal(id, coords, page, async () => await takeScreenshotCallback(undefined, context), async (regId) => {
+            const id = nanoid();
+            const coordinateScreenshot = await createCoordinatesOverlay(globalStore.value.screenshots.get(regId!)!);
+            globalStore.value.screenshots.set(id, coordinateScreenshot);
+            return id;
+        }, afterClick);
   },
 });

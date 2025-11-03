@@ -8,14 +8,12 @@ import { typeText } from "../tools/browserUse/type";
 import { load, Prompt } from "@fragola-ai/prompt";
 
 // Load XML prompt with tool usage guidance
-const systemPrompt = new Prompt(load("./agents/brwoserUsePrompt"));
+const systemPrompt = new Prompt(load("./agents/brwoserUsePrompt.xml"));
 
 export const browserUseAgent = fragola
   .agent({
-    name: "scraperAgent",
+    name: "browserUseAgent",
     instructions: systemPrompt.value,
     description: "Captures webpage screenshots using Puppeteer and stores them in memory.",
     tools: [openBrowser, openTab, setTabUrl, takeScreenshot, click, typeText],
   })
-  // Keep saving under the same folder as before for consistency
-  .use(fileSystemSave("./testOrchestration"));

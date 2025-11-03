@@ -3,3 +3,5 @@ export type ExtractToolHandler<T> = T extends { handler: infer H }
         ? H
         : never
     : never;
+
+export type AwaitedReturn<T extends (...args: any[]) => any> = Awaited<ReturnType<T>>;

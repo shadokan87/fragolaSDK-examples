@@ -177,5 +177,6 @@ export async function getInteractiveElementsPosition(
 		id: `${getId()}`,
 		...el,
 	}));
+	id = 0;
 	return withIds;
 }

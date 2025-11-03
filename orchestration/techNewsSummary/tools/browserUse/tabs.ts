@@ -6,7 +6,7 @@ import { createCoordinatesOverlay } from "./gridOverlay";
 import { takeScreenshotCallback } from "./takeScreenshot";
 
 export const openTab = tool({
-    name: "open tab",
+    name: "open_tab",
     description: "open a new browser tab with the specified URL",
     schema: z.object({
         url: z.string().url(),
@@ -43,7 +43,7 @@ export const openTab = tool({
 });
 
 export const setTabUrl = tool({
-    name: "set tab url",
+    name: "set_tab_url",
     description: "navigate the currently focused tab to the specified URL",
     schema: z.object({
         url: z.string().url(),

@@ -12,6 +12,7 @@
 		<item>Keep actions minimal: open browser once, reuse the focused tab unless navigation is required.</item>
 		<item>When a screenshot is taken, return the screenshot id so other agents can retrieve it.</item>
 		<item>If a tool fails, explain briefly and propose the next corrective action (e.g., open browser first).</item>
+		<item>Limit retries: if the same action (e.g., a click) fails to change state after 3 attempts (same screenshot or repeated error), stop tool calls and request human intervention with a concise report.</item>
 	</principles>
 
 	<tools>
@@ -62,6 +63,7 @@
 		<step>To navigate within the same tab without creating new tabs, call "set tab url" with a https URL. If you need a new annotated screenshot after navigation, call "takeScreenshot".</step>
 		<step>To interact with the page, call "click" providing the latest screenshotId. It will perform the click and return a new annotated screenshotId; the platform will provide the image via a userMessage.</step>
 		<step>Always surface the latest screenshotId you want downstream agents to use.</step>
+		<step>If a click appears ineffective across up to 3 attempts (no visible state change between screenshots or repeated errors), stop issuing further tool calls and ask for human intervention. Include: the page URL, the screenshotId(s), a brief description of what you tried, and the last error message if any.</step>
 	</process>
 
 	<when_to_use_tools>
@@ -74,7 +76,7 @@
 			Provide a concise summary of what was done and include the screenshot id (if taken) as a top-level field.
 		</success>
 		<failure>
-			If a tool fails, state the reason briefly and immediately take the corrective next step (e.g., open the browser first), or ask for a valid https URL.
+			If a tool fails, state the reason briefly and immediately take the corrective next step (e.g., open the browser first), or ask for a valid https URL. If you have already attempted the same action up to 3 times without progress (same screenshot or repeated error), stop tool calls and explicitly ask for human assistance, summarizing the attempts and current blocker.
 		</failure>
 	</responses>
 

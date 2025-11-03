@@ -7,7 +7,7 @@ import { nanoid } from "nanoid";
 import { takeScreenshotCallback } from "./takeScreenshot";
 
 export const openBrowser = tool({
-    name: "open browser",
+    name: "open_browser",
     description: "open a new web browser",
     // schema: z.object({}),
     handler: async (params, context) => {
@@ -20,7 +20,7 @@ export const openBrowser = tool({
         }
         try {
             const browser = await puppeteer.launch({
-                headless: true,
+                headless: false,
                 defaultViewport: { width: 2560, height: 1440, deviceScaleFactor: 1 },
                 args: [
                     "--no-sandbox",

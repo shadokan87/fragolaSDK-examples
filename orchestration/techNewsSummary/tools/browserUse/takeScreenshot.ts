@@ -27,7 +27,7 @@ export async function takeScreenshotCallback(parameters: any, context: AgentCont
     const base64 = (await page.screenshot({
       type: "png",
       encoding: "base64",
-      fullPage: true,
+      fullPage: false, // Only capture the viewport, not the entire page
     })) as string;
     const id = nanoid();
     const mime = "image/png";
@@ -41,7 +41,7 @@ export async function takeScreenshotCallback(parameters: any, context: AgentCont
 }
 
 export const takeScreenshot = tool({
-  name: "takeScreenshot",
+  name: "take_screenshot",
   description:
     "Take a screenshot of the focused page then return and id for the file handler",
   handler: takeScreenshotCallback,
