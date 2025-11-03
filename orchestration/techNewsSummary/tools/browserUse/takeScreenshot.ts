@@ -5,6 +5,7 @@ import { nanoid } from "nanoid";
 import { globalStoreType } from "../../store/globalStore";
 import { getInteractiveElementsPosition } from "../../dom/getInteractiveElementsPosition";
 import { AgentContext } from "@fragola-ai/agentic-sdk-core/agent";
+import { createCoordinatesOverlay } from "./gridOverlay";
 
 // Independent screenshot callback
 export async function takeScreenshotCallback(parameters: any, context: AgentContext<{}, globalStoreType, {}>) {
@@ -29,11 +30,16 @@ export async function takeScreenshotCallback(parameters: any, context: AgentCont
       encoding: "base64",
       fullPage: false, // Only capture the viewport, not the entire page
     })) as string;
-    const id = nanoid();
+    const regId = nanoid();
     const mime = "image/png";
-    globalStore.value.screenshots.set(id, { coordinates, url: page.url(), mime, base64, createdAt: new Date().toISOString() });
+    globalStore.value.screenshots.set(regId, { coordinates, url: page.url(), mime, base64, createdAt: new Date().toISOString() });
+    
+    const id = nanoid();
+    const coordinateScreenshot = await createCoordinatesOverlay(globalStore.value.screenshots.get(regId!)!);
+    globalStore.value.screenshots.set(id, coordinateScreenshot);
     return {
       id,
+      screenshotId: id
     };
   } finally {
     // Do not close the browser, just leave it open

@@ -59,7 +59,13 @@ export const setTabUrl = tool({
         }
         try {
             await page.goto(params.url, { waitUntil: "domcontentloaded" });
-            return { success: `focused tab url is now "${params.url}"` };
+                     const screenshot = await takeScreenshotCallback(undefined, context);
+            if (screenshot["fail"])
+                return { fail: "the new tab opened successfully, but the screenshot failed. Try to reopen a tab with the same url" };
+            const coordinateScreenshot = await createCoordinatesOverlay(globalStore.value.screenshots.get(screenshot.id!)!);
+            const coordinateScreenshotId = nanoid();
+            globalStore.value.screenshots.set(coordinateScreenshotId, coordinateScreenshot);
+            return { success: `focused tab url is now "${params.url}"`, screenshotId: coordinateScreenshotId};
         } catch (error) {
             return { fail: `failed to navigate tab: ${(error as Error).message}` };
         }

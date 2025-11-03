@@ -8,6 +8,7 @@ import { click } from "./tools/browserUse/click";
 import { typeText } from "./tools/browserUse/type";
 import path from "path";
 import fs from "fs";
+import { takeScreenshot } from "./tools/browserUse/takeScreenshot";
 // // Wire orchestration: lead -> scraper -> vision -> lead
 // orchestrator.use(
 //   orchestration((lead) => ({
@@ -19,18 +20,18 @@ import fs from "fs";
 //     ],
 //   }))
 // );
-const topic = "birds";
+const topic = "google_signin";
 type screenshotId = {
     screenshotId: string
 }
 browserUseAgent.use(fileSystemSave("./testOrchestration/" + topic));
-browserUseAgent.onAfterStateUpdate((context) => {
+browserUseAgent.onAfterStateUpdate(async (context) => {
     console.log(JSON.stringify(context.state.conversation, null, 2));
     if (context.state.conversation.at(-1)?.role == "assistant") {
         const messageBefore = context.state.conversation.at(-2);
         if (messageBefore && messageBefore.role == "tool") {
             const origin = conversationUtils(context.state.conversation).toolCallOrigin(messageBefore);
-            if (origin && origin.type == "function" && [openTab, click, typeText].map(t => t.name).includes(origin.function.name)) {
+            if (origin && origin.type == "function" && [openTab, click, typeText, takeScreenshot].map(t => t.name).includes(origin.function.name)) {
                 const { screenshotId } = JSON.parse(messageBefore.content as string) as screenshotId;
                 const screenshot = context.globalStore?.value.screenshots.get(screenshotId);
                 if (screenshot) {
@@ -45,6 +46,10 @@ browserUseAgent.onAfterStateUpdate((context) => {
                             { type: "image_url", image_url: { url: dataUrl } },
                         ],
                     });
+                } else {
+                    void browserUseAgent.userMessage({
+                        content: `An error occured for screenshot with id ${screenshotId}, you must call the 'take_screenshot' tool to try again.`
+                    })
                 }
             }
         }
@@ -66,8 +71,12 @@ browserUseAgent.onModelInvocation(async (callApi, context) => {
 });
 
 await browserUseAgent.userMessage({
-    content: "search for the music 'imagine dragons, birds live' on youtube, play the first video",
+    content: "create a new google docs and write hello world ! then save the document under hello_world. my temporary secured google credentials for testing purpose are 'mohamadoune.rouanet' and  'shodokan87' for the password.",
 });
+
+// await browserUseAgent.userMessage({
+//     content: "search for the music 'imagine dragons, birds live' on youtube, play the first video",
+// });
 
 // await browserUseAgent.userMessage({
 //     content: "search on duckduckgo search engine, for hello world ! and click on the wikipedia link, then stop and summarize what you did",

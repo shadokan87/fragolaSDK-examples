@@ -8,7 +8,7 @@ import { typeText } from "../tools/browserUse/type";
 import { load, Prompt } from "@fragola-ai/prompt";
 
 // Load XML prompt with tool usage guidance
-const systemPrompt = new Prompt(load("./agents/brwoserUsePrompt.xml"));
+const systemPrompt = new Prompt(load("./agents/browserUsePrompt"));
 
 export const browserUseAgent = fragola
   .agent({

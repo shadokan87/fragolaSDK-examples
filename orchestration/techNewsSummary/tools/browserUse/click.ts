@@ -36,7 +36,7 @@ export const clickInternal = async (
         await page.mouse.click(x, y);
 
         // Await navigation if it occurred (no-op if it didn’t)
-        // await waitForNav;
+        await waitForNav;
         const afterOp = afterClick && await afterClick(page);
 
         // Take a fresh screenshot (retry once if the context was destroyed by nav)
@@ -57,7 +57,7 @@ export const clickInternal = async (
         // const coordinateScreenshot = await createCoordinatesOverlay(globalStore.value.screenshots.get(screenshot.id!)!);
         // const coordinateScreenshotId = nanoid();
         // globalStore.value.screenshots.set(coordinateScreenshotId, coordinateScreenshot);
-        return { success: true, message: `clicked ${afterOp ? 'and' + afterOp : ''} at (${x}, ${y}) for id ${id}`, screenshotId: await annotatedScreenshotCallback(screenshot.id!) };
+        return { success: true, message: `clicked ${afterOp ? 'and ' + afterOp : ''} at (${x}, ${y}) for id ${id}`, screenshotId: await annotatedScreenshotCallback(screenshot.id!) };
     } catch (e) {
         return { fail: `error clicking at (${x}, ${y}) for id ${id}: ${(e as Error).message}` };
     }
