@@ -20,11 +20,11 @@ import { takeScreenshot } from "./tools/browserUse/takeScreenshot";
 //     ],
 //   }))
 // );
-const topic = "google_signin";
+const topic = "onepiece";
 type screenshotId = {
     screenshotId: string
 }
-browserUseAgent.use(fileSystemSave("./testOrchestration/" + topic));
+browserUseAgent.use(fileSystemSave("./testOrchestrationModal/" + topic));
 browserUseAgent.onAfterStateUpdate(async (context) => {
     console.log(JSON.stringify(context.state.conversation, null, 2));
     if (context.state.conversation.at(-1)?.role == "assistant") {
@@ -36,7 +36,7 @@ browserUseAgent.onAfterStateUpdate(async (context) => {
                 const screenshot = context.globalStore?.value.screenshots.get(screenshotId);
                 if (screenshot) {
                     const dataUrl = `data:${screenshot.mime};base64,${screenshot.base64}`;
-                    const outPath = path.resolve(__dirname, `./testOrchestration/${topic}/${screenshotId}.png`);
+                    const outPath = path.resolve(__dirname, `./testOrchestrationModal/${topic}/${screenshotId}.png`);
                     const outBuffer = Buffer.from(screenshot.base64, "base64");
                     fs.writeFileSync(outPath, outBuffer);
                     // Send the image to the agent as a userMessage with OpenAI-like content parts
@@ -71,8 +71,12 @@ browserUseAgent.onModelInvocation(async (callApi, context) => {
 });
 
 await browserUseAgent.userMessage({
-    content: "create a new google docs and write hello world ! then save the document under hello_world. my temporary secured google credentials for testing purpose are 'mohamadoune.rouanet' and  'shodokan87' for the password.",
-});
+    content: "go on the website https://nyaa.si/ and download the last episode of onepiece"
+})
+
+// await browserUseAgent.userMessage({
+//     content: "create a new google docs and write hello world ! then save the document under hello_world. my temporary secured google credentials for testing purpose are 'mohamadoune.rouanet' and  'shodokan87' for the password.",
+// });
 
 // await browserUseAgent.userMessage({
 //     content: "search for the music 'imagine dragons, birds live' on youtube, play the first video",
