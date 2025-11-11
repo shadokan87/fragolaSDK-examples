@@ -1,14 +1,14 @@
 import fs from "fs";
 import path from "path";
-import { createCoordinatesOverlay } from "./tools/browserUse/gridOverlay";
-import { globalStore, ScreenshotMeta } from "./store/globalStore";
+import { createCoordinatesOverlay } from "./dom/gridOverlay";
+import { store, ScreenshotMeta } from "./store/store";
 import { browserUseAgent } from "./agents/browserUseAgent";
 async function main() {
-  // globalStore.onChange((value) => {
+  // store.onChange((value) => {
   //   console.log("!value change", value);
   // });
   await browserUseAgent.userMessage({content: "take a screenshot of the google homepage"});
-  const screenshot = globalStore.value.screenshots.values().next().value as ScreenshotMeta | undefined;
+  const screenshot = store.value.screenshots.values().next().value as ScreenshotMeta | undefined;
   if (!screenshot || !screenshot.coordinates) throw new Error("coordinates undefined");
 
   // Create overlay with red frames around detected elements and save to disk

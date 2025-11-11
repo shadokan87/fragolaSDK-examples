@@ -4,7 +4,7 @@
     "description": "",
     "scripts": {},
     "dependencies": {
-        "@fragola-ai/agentic-sdk-core": "0.1.6-a",
+        "@fragola-ai/agentic-sdk-core": "0.1.9-a",
         "@types/jimp": "^0.2.28",
         "jimp": "^0.22.12",
         "nanoid": "^5.0.7",

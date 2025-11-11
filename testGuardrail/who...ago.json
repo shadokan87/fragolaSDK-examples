@@ -1,0 +1,13 @@
+[
+  {
+    "role": "user",
+    "content": "who was the king of englend 200 years ago",
+    "meta": {
+      "guardrail": {
+        "rejected": true,
+        "guard": "",
+        "reason": "Message must be about Medical"
+      }
+    }
+  }
+]

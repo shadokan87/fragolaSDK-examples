@@ -1,0 +1,77 @@
+[
+  {
+    "role": "user",
+    "content": "Search for the music 'imagine dragons birds live' on youtube and play the first result that match"
+  },
+  {
+    "annotations": [],
+    "content": null,
+    "refusal": null,
+    "role": "assistant",
+    "tool_calls": [
+      {
+        "function": {
+          "arguments": "{}",
+          "name": "open_browser"
+        },
+        "id": "call_NXbAF1wVELjcNrYHt8eDPy6C",
+        "type": "function"
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "content": "{\"success\":\"you may proceed\"}",
+    "tool_call_id": "call_NXbAF1wVELjcNrYHt8eDPy6C"
+  },
+  {
+    "annotations": [],
+    "content": null,
+    "refusal": null,
+    "role": "assistant",
+    "tool_calls": [
+      {
+        "function": {
+          "arguments": "{\"url\":\"https://www.youtube.com\"}",
+          "name": "set_tab_url"
+        },
+        "id": "call_iDK8wSjHZ8j3z228CZKApw2o",
+        "type": "function"
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "content": "{\"fail\":\"failed: no focused tab. Please open or focus a tab first.\"}",
+    "tool_call_id": "call_iDK8wSjHZ8j3z228CZKApw2o"
+  },
+  {
+    "annotations": [],
+    "content": null,
+    "refusal": null,
+    "role": "assistant",
+    "tool_calls": [
+      {
+        "function": {
+          "arguments": "{\"url\":\"https://www.youtube.com\"}",
+          "name": "open_tab"
+        },
+        "id": "call_jgcj2joLKURZBAbebwkMLiAC",
+        "type": "function"
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "content": "{\"fail\":\"failed to open tab: Navigation timeout of 30000 ms exceeded\"}",
+    "tool_call_id": "call_jgcj2joLKURZBAbebwkMLiAC"
+  },
+  {
+    "role": "assistant",
+    "content": "I am now waiting for the screenshot with id: undefined"
+  },
+  {
+    "role": "user",
+    "content": "An error occured for screenshot with id undefined, you must call the 'take_screenshot' tool to try again."
+  }
+]

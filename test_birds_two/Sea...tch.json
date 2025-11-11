@@ -1,0 +1,48 @@
+[
+  {
+    "role": "user",
+    "content": "Search for the music 'imagine dragons birds live' on youtube and play the first result that match"
+  },
+  {
+    "annotations": [],
+    "content": null,
+    "refusal": null,
+    "role": "assistant",
+    "tool_calls": [
+      {
+        "function": {
+          "arguments": "{}",
+          "name": "open_browser"
+        },
+        "id": "call_lhwHBUrZ9tyONBi7bgybk2xH",
+        "type": "function"
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "content": "{\"success\":\"you may proceed\"}",
+    "tool_call_id": "call_lhwHBUrZ9tyONBi7bgybk2xH"
+  },
+  {
+    "annotations": [],
+    "content": null,
+    "refusal": null,
+    "role": "assistant",
+    "tool_calls": [
+      {
+        "function": {
+          "arguments": "{\"url\":\"https://youtube.com\"}",
+          "name": "set_tab_url"
+        },
+        "id": "call_hWG7UgrcNVVrnBO0uHbeCAxY",
+        "type": "function"
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "content": "{\"fail\":\"failed: no focused tab. Please open or focus a tab first.\"}",
+    "tool_call_id": "call_hWG7UgrcNVVrnBO0uHbeCAxY"
+  }
+]

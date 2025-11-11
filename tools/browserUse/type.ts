@@ -1,8 +1,8 @@
 import { tool } from "@fragola-ai/agentic-sdk-core";
 import z from "zod";
-import { globalStoreType } from "../../store/globalStore";
+import { namespace, storeType } from "../../store/store";
 import { takeScreenshotCallback } from "./takeScreenshot";
-import { createCoordinatesOverlay } from "./gridOverlay";
+import { createCoordinatesOverlay } from "../../dom/gridOverlay";
 import { nanoid } from "nanoid";
 import { AfterClick, clickInternal } from "./click";
 
@@ -16,15 +16,15 @@ export const typeText = tool({
     submit: z.boolean().optional().default(false).describe("If true, submits after typing (e.g., press Enter or submit form)"),
   }),
   handler: async ({ id, screenshotId, text, submit = false }, context) => {
-  const globalStore = context.instance.getStore<globalStoreType>();
-  if (!globalStore) {
+  const store = context.getStore<storeType>(namespace);
+  if (!store) {
       return { fail: "could not access global store." };
     }
-  const page = globalStore.value.focusedPage;
+  const page = store.value.focusedPage;
     if (!page) {
       return { fail: "no focused page. Open a tab first." };
     }
-  const meta = globalStore.value.screenshots.get(screenshotId);
+  const meta = store.value.screenshots.get(screenshotId);
     if (!meta) {
       return { fail: `no screenshot found for screenshotId ${screenshotId}` };
     }
@@ -44,8 +44,8 @@ export const typeText = tool({
     }
     return await clickInternal(id, coords, page, async () => await takeScreenshotCallback(undefined, context), async (regId) => {
       const id = nanoid();
-  const coordinateScreenshot = await createCoordinatesOverlay(globalStore.value.screenshots.get(regId!)!);
-  globalStore.value.screenshots.set(id, coordinateScreenshot);
+  const coordinateScreenshot = await createCoordinatesOverlay(store.value.screenshots.get(regId!)!);
+  store.value.screenshots.set(id, coordinateScreenshot);
       return id;
     }, afterClick);
   },

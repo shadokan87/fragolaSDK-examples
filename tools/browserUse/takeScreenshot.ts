@@ -2,23 +2,23 @@ import { tool } from "@fragola-ai/agentic-sdk-core";
 import puppeteer from "puppeteer";
 import z from "zod";
 import { nanoid } from "nanoid";
-import { globalStoreType } from "../../store/globalStore";
+import { namespace, storeType } from "../../store/store";
 import { getInteractiveElementsPosition } from "../../dom/getInteractiveElementsPosition";
 import { AgentContext } from "@fragola-ai/agentic-sdk-core/agent";
-import { createCoordinatesOverlay } from "./gridOverlay";
+import { createCoordinatesOverlay } from "../../dom/gridOverlay";
 
 // Independent screenshot callback
-export async function takeScreenshotCallback(parameters: any, context: AgentContext<{}, globalStoreType, {}>) {
+export async function takeScreenshotCallback(parameters: any, context: AgentContext<{}, storeType, {}>) {
   void parameters;
 
-  const globalStore = context.instance.getStore<globalStoreType>();
-  if (!globalStore) {
+  const store = context.getStore<storeType>(namespace);
+  if (!store) {
     return { fail: "Global store undefined error" };
   }
-  if (!globalStore.value.browser) {
+  if (!store.value.browser) {
     return { fail: "failed: browser is not opened. Please open the browser first." };
   }
-  const { browser, focusedPage } = globalStore.value;
+  const { browser, focusedPage } = store.value;
   const page = focusedPage;
   if (!page) {
     return { fail: "failed: you must open a new tab first. no focused page found" };
@@ -32,11 +32,11 @@ export async function takeScreenshotCallback(parameters: any, context: AgentCont
     })) as string;
     const regId = nanoid();
     const mime = "image/png";
-    globalStore.value.screenshots.set(regId, { coordinates, url: page.url(), mime, base64, createdAt: new Date().toISOString() });
+    store.value.screenshots.set(regId, { coordinates, url: page.url(), mime, base64, createdAt: new Date().toISOString() });
     
     const id = nanoid();
-    const coordinateScreenshot = await createCoordinatesOverlay(globalStore.value.screenshots.get(regId!)!);
-    globalStore.value.screenshots.set(id, coordinateScreenshot);
+    const coordinateScreenshot = await createCoordinatesOverlay(store.value.screenshots.get(regId!)!);
+    store.value.screenshots.set(id, coordinateScreenshot);
     return {
       id,
       screenshotId: id
